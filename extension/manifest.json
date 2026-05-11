@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "JagaFakta - Cek Hoaks Instan",
+  "version": "1.0.0",
+  "description": "Cek kebenaran berita, artikel, atau teks apapun langsung dari browser dengan AI JagaFakta.",
+  "permissions": ["contextMenus", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Buka JagaFakta"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
