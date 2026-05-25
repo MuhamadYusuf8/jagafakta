@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
 
     // 2. Request Validation
     const body = await request.json();
-    const { inputType, content, imageBase64, imageMimeType } = body;
+    const { inputType, content, imageBase64, imageMimeType, videoUrl, videoBase64, videoMimeType } = body;
 
-    if (!inputType || !["text", "image"].includes(inputType)) {
+    if (!inputType || !["text", "image", "video"].includes(inputType)) {
       return Response.json(
-        { error: "Tipe input harus 'text' atau 'image'." },
+        { error: "Tipe input harus 'text', 'image', atau 'video'." },
         { status: 400 }
       );
     }
@@ -61,8 +61,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (inputType === "video") {
+      if (!videoUrl && !videoBase64) {
+        return Response.json(
+          { error: "Sertakan URL video atau upload file video." },
+          { status: 400 }
+        );
+      }
+      if (videoUrl) {
+        try { new URL(videoUrl); } catch {
+          return Response.json({ error: "URL video tidak valid." }, { status: 400 });
+        }
+      }
+    }
+
     // 3. Caching Logic
-    const rawContent = inputType === "text" ? content : imageBase64;
+    const rawContent =
+      inputType === "text" ? content
+      : inputType === "image" ? imageBase64
+      : videoUrl ?? videoBase64 ?? "video-unknown";
     const contentKey = hashContent(rawContent);
 
     const cached = await getCached<FactCheckResult>(contentKey);
@@ -73,20 +90,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Gemini API Call with 30-second timeout
+    // 4. Gemini API Call with 60-second timeout (video needs more time)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    const timeoutMs = inputType === "video" ? 60_000 : 30_000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     let result: FactCheckResult;
     try {
       if (inputType === "text") {
         result = await analyzeContent("text", content, controller.signal);
-      } else {
+      } else if (inputType === "image") {
         result = await analyzeContent(
           "image",
           { base64: imageBase64, mimeType: imageMimeType },
           controller.signal
         );
+      } else {
+        // video
+        const videoContent = videoUrl
+          ? { url: videoUrl }
+          : { base64: videoBase64!, mimeType: videoMimeType || "video/mp4" };
+        result = await analyzeContent("video", videoContent, controller.signal);
       }
     } catch (aiError: any) {
       if (aiError instanceof Error && aiError.name === "AbortError") {

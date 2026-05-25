@@ -101,8 +101,8 @@ function createModel(modelName: string) {
  */
 async function callModel(
   modelName: string,
-  inputType: "text" | "image",
-  content: string | { base64: string; mimeType: string },
+  inputType: "text" | "image" | "video",
+  content: string | { base64: string; mimeType: string } | { url: string } | { base64: string; mimeType: string; isVideo: true },
   signal?: AbortSignal
 ) {
   const model = createModel(modelName);
@@ -111,20 +111,76 @@ async function callModel(
   if (inputType === "text" && typeof content === "string") {
     const prompt = `Analisis teks berikut dan verifikasi kebenarannya:\n\n${content}`;
     return await model.generateContent(prompt, requestOptions);
-  } else if (inputType === "image" && typeof content === "object") {
+  } else if (inputType === "image" && typeof content === "object" && "base64" in content && !((content as any).isVideo)) {
     const prompt = "Analisis gambar berikut dan verifikasi kebenaran informasi yang terkandung di dalamnya:";
     return await model.generateContent(
       [
         prompt,
         {
           inlineData: {
-            data: content.base64,
-            mimeType: content.mimeType,
+            data: (content as { base64: string; mimeType: string }).base64,
+            mimeType: (content as { base64: string; mimeType: string }).mimeType,
           },
         },
       ],
       requestOptions
     );
+  } else if (inputType === "video") {
+    if (typeof content === "object" && "url" in content) {
+      const url = (content as { url: string }).url;
+      const isYouTube = /youtube\.com|youtu\.be/.test(url);
+
+      if (isYouTube) {
+        // YouTube is officially supported by Gemini via fileData — this actually watches the video
+        const prompt = `Analisis video YouTube ini secara menyeluruh. Tonton seluruh isi video, dengarkan narasi/dialog, baca teks yang muncul, dan verifikasi semua klaim serta informasi yang disampaikan. Deteksi apakah ada konten yang menyesatkan, manipulasi, atau hoaks. Berikan verdict sesuai format JSON.`;
+        return await model.generateContent(
+          [
+            prompt,
+            {
+              fileData: {
+                fileUri: url,
+                mimeType: "video/mp4",
+              },
+            },
+          ],
+          requestOptions
+        );
+      } else {
+        // Non-YouTube: Gemini can't directly access these URLs, analyze via text context
+        const platform = url.includes("tiktok") ? "TikTok"
+          : url.includes("instagram") ? "Instagram"
+          : url.includes("facebook") ? "Facebook"
+          : url.includes("twitter") || url.includes("x.com") ? "Twitter/X"
+          : "platform video";
+
+        const prompt = `Pengguna ingin memverifikasi konten video dari URL ${platform} berikut: ${url}
+
+Lakukan hal berikut:
+1. Analisis domain, struktur URL, dan semua informasi yang bisa diambil dari URL tersebut
+2. Jika URL mengandung judul/deskripsi yang bisa diidentifikasi, gunakan itu sebagai konteks
+3. Berikan verdict jujur — jika konten video tidak bisa diakses langsung, gunakan "TIDAK_DAPAT_DIVERIFIKASI"
+4. Di bagian "context", jelaskan bahwa untuk akurasi maksimal, user sebaiknya upload file videonya langsung atau gunakan link YouTube
+5. Di bagian "explanation", tetap berikan analisis berdasarkan konteks URL yang tersedia`;
+        return await model.generateContent(prompt, requestOptions);
+      }
+    } else if (typeof content === "object" && "base64" in content) {
+      // Uploaded video file via inlineData
+      const prompt = `Analisis video yang diupload berikut secara menyeluruh. Verifikasi semua klaim, pernyataan, narasi, dan informasi yang ada di dalamnya. Deteksi apakah ada manipulasi visual (deepfake), transkrip yang disalahartikan, atau konten yang menyesatkan.`;
+      return await model.generateContent(
+        [
+          prompt,
+          {
+            inlineData: {
+              data: (content as { base64: string; mimeType: string }).base64,
+              mimeType: (content as { base64: string; mimeType: string }).mimeType,
+            },
+          },
+        ],
+        requestOptions
+      );
+    } else {
+      throw new Error("Data video tidak valid");
+    }
   } else {
     throw new Error("Tipe input tidak valid");
   }
@@ -135,8 +191,8 @@ async function callModel(
  * Automatically falls back to alternative models if the primary model is rate-limited.
  */
 export async function analyzeContent(
-  inputType: "text" | "image",
-  content: string | { base64: string; mimeType: string },
+  inputType: "text" | "image" | "video",
+  content: string | { base64: string; mimeType: string } | { url: string },
   signal?: AbortSignal
 ): Promise<FactCheckResult> {
   let lastError: any = null;

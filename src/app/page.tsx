@@ -18,12 +18,20 @@ import Link from "next/link";
 import type { FactCheckResult } from "@/types";
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<"text" | "image">("text");
+  const [activeTab, setActiveTab] = useState<"text" | "image" | "video">("text");
   const [inputText, setInputText] = useState("");
   const [uploadedImage, setUploadedImage] = useState<{
     file: File;
     base64: string;
     preview: string;
+  } | null>(null);
+  const [videoData, setVideoData] = useState<{
+    type: "url" | "file";
+    url?: string;
+    file?: File;
+    base64?: string;
+    mimeType?: string;
+    preview?: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<FactCheckResult | null>(null);
@@ -80,6 +88,10 @@ export default function HomePage() {
       toast.error("Upload gambar untuk diverifikasi");
       return;
     }
+    if (activeTab === "video" && !videoData) {
+      toast.error("Masukkan link atau upload video untuk diverifikasi");
+      return;
+    }
 
     setIsLoading(true);
     setResult(null);
@@ -89,11 +101,19 @@ export default function HomePage() {
       const body =
         activeTab === "text"
           ? { inputType: "text", content: inputText.trim() }
+          : activeTab === "image"
+          ? {
+              inputType: "image",
+              imageBase64: uploadedImage!.base64,
+              imageMimeType: uploadedImage!.file.type,
+            }
+          : videoData?.type === "url"
+          ? { inputType: "video", videoUrl: videoData.url }
           : {
-            inputType: "image",
-            imageBase64: uploadedImage!.base64,
-            imageMimeType: uploadedImage!.file.type,
-          };
+              inputType: "video",
+              videoBase64: videoData!.base64,
+              videoMimeType: videoData!.mimeType,
+            };
 
       const response = await fetch("/api/check", {
         method: "POST",
@@ -140,6 +160,7 @@ export default function HomePage() {
     setError(null);
     setInputText("");
     setUploadedImage(null);
+    setVideoData(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -244,6 +265,8 @@ export default function HomePage() {
                   onTextChange={setInputText}
                   uploadedImage={uploadedImage}
                   onImageChange={setUploadedImage}
+                  videoData={videoData}
+                  onVideoChange={setVideoData}
                   isLoading={isLoading}
                   onSubmit={handleSubmit}
                 />
