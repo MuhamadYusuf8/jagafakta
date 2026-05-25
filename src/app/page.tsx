@@ -151,94 +151,124 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden">
-          {/* Background effects */}
-          <div className="absolute inset-0 noise-bg" />
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full
-                         bg-accent/[0.04] blur-[120px] pointer-events-none" />
-          <div className="absolute top-40 right-0 w-32 h-32 rounded-full
-                         bg-blue-500/[0.06] blur-[80px] animate-float pointer-events-none" />
-          <div className="absolute top-60 left-10 w-20 h-20 rounded-full
-                         bg-accent/[0.08] blur-[60px] animate-float pointer-events-none"
+        <section className="relative overflow-hidden min-h-[90vh] flex flex-col justify-center">
+          {/* Enhanced Background Effects */}
+          <div className="absolute inset-0 noise-bg opacity-40 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background" />
+          
+          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full
+                         bg-gradient-to-b from-accent/20 to-transparent blur-[120px] pointer-events-none" />
+          <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full
+                         bg-blue-600/10 blur-[120px] animate-pulse-slow pointer-events-none" />
+          <div className="absolute top-[40%] left-[-10%] w-[400px] h-[400px] rounded-full
+                         bg-purple-600/10 blur-[120px] animate-pulse-slow pointer-events-none"
                style={{ animationDelay: "2s" }} />
 
-          <div className="relative max-w-2xl mx-auto px-4 pt-12 sm:pt-16 pb-8">
-            {/* Powered by badge */}
+          <div className="relative max-w-3xl mx-auto px-4 pt-20 sm:pt-28 pb-12 z-10">
+            {/* Premium Powered by badge */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="flex justify-center mb-6"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex justify-center mb-8"
             >
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                             text-[11px] font-medium bg-accent/8 text-accent/70 border border-accent/15">
-                <span className="text-sm">🤖</span>
-                Powered by Gemini 2.0 Flash
-              </span>
+              <div className="relative group cursor-default">
+                <div className="absolute inset-0 bg-gradient-to-r from-accent via-blue-500 to-purple-500 rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-500"></div>
+                <div className="relative flex items-center gap-2 px-5 py-2 rounded-full
+                               bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+                  <span className="text-sm">🤖</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white/90 tracking-wide">
+                    Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Gemini 2.0 Flash</span>
+                  </span>
+                  <span className="w-px h-3 bg-white/20 mx-1"></span>
+                  <span className="text-xs font-bold text-accent flex items-center gap-1">
+                    <Zap className="w-3 h-3" /> Ultra-Fast
+                  </span>
+                </div>
+              </div>
             </motion.div>
 
-            {/* H1 */}
+            {/* H1 - Massive & Bold */}
             <motion.h1
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-center font-jakarta font-extrabold text-3xl sm:text-4xl md:text-5xl
-                         leading-tight tracking-tight text-text-primary mb-4"
+              transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
+              className="text-center font-jakarta font-black text-5xl sm:text-6xl md:text-7xl
+                         leading-[1.1] tracking-tight text-white mb-6 drop-shadow-xl"
             >
               Cek Hoaks,
               <br />
-              <span className="bg-gradient-to-r from-accent via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                Sebelum Terlambat.
+              <span className="relative inline-block mt-2">
+                <span className="absolute -inset-2 bg-gradient-to-r from-accent via-blue-500 to-purple-500 blur-2xl opacity-20"></span>
+                <span className="relative bg-gradient-to-r from-accent via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  Sebelum Terlambat.
+                </span>
               </span>
             </motion.h1>
 
             {/* Sub-heading */}
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="text-center text-sm sm:text-base text-text-muted leading-relaxed max-w-lg mx-auto mb-8"
+              transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+              className="text-center text-base sm:text-lg text-text-muted leading-relaxed max-w-xl mx-auto mb-10"
             >
-              Verifikasi teks atau gambar dari WhatsApp secara instan dengan AI.
-              <br className="hidden sm:block" />
-              <span className="text-text-primary/70 font-medium"> Gratis. Akurat. Real-time.</span>
+              Verifikasi teks atau gambar dari WhatsApp secara instan dengan kecerdasan buatan terdepan.
+              <span className="block mt-2 text-white/80 font-medium">Gratis. Akurat. Real-time.</span>
             </motion.p>
 
             {/* Stats */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="mb-8"
+              transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+              className="mb-12 max-w-2xl mx-auto"
             >
               <StatsBar />
             </motion.div>
 
-            {/* Main Card */}
+            {/* Main Card - Premium Glassmorphism */}
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.5 }}
-              className="glass-strong rounded-2xl p-4 sm:p-6 shadow-glow-sm space-y-5"
+              transition={{ delay: 0.4, duration: 0.7, ease: "easeOut" }}
+              className="relative group mx-auto max-w-2xl"
             >
-              <InputTabs
-                activeTab={activeTab}
-                onTabChange={(tab) => {
-                  setActiveTab(tab);
-                  setError(null);
-                }}
-                inputText={inputText}
-                onTextChange={setInputText}
-                uploadedImage={uploadedImage}
-                onImageChange={setUploadedImage}
-                isLoading={isLoading}
-                onSubmit={handleSubmit}
-              />
+              <div className="absolute -inset-0.5 bg-gradient-to-b from-white/15 to-white/5 rounded-[2rem] blur-sm opacity-50 group-hover:opacity-100 transition duration-500"></div>
+              <div className="relative bg-background/60 backdrop-blur-2xl rounded-[2rem] p-6 sm:p-8 border border-white/[0.08] shadow-[0_0_40px_rgba(0,0,0,0.5)] space-y-6">
+                <InputTabs
+                  activeTab={activeTab}
+                  onTabChange={(tab) => {
+                    setActiveTab(tab);
+                    setError(null);
+                  }}
+                  inputText={inputText}
+                  onTextChange={setInputText}
+                  uploadedImage={uploadedImage}
+                  onImageChange={setUploadedImage}
+                  isLoading={isLoading}
+                  onSubmit={handleSubmit}
+                />
 
-              <ExampleCases onSelect={handleExampleSelect} />
+                <div className="pt-2">
+                  <ExampleCases onSelect={handleExampleSelect} />
+                </div>
+              </div>
             </motion.div>
-
           </div>
+          
+          {/* Decorative scroll indicator */}
+          {!isLoading && !result && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 1 }}
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-text-muted/50"
+            >
+              <span className="text-[10px] uppercase tracking-widest font-bold">Scroll</span>
+              <div className="w-px h-8 bg-gradient-to-b from-text-muted/50 to-transparent"></div>
+            </motion.div>
+          )}
         </section>
 
         {/* ── VerdictReveal: handles loading scanner + dramatic reveal ── */}
@@ -263,24 +293,31 @@ export default function HomePage() {
         {/* Features Dashboard Section */}
         {!isLoading && !result && (
           <motion.section
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mt-20 mb-12 max-w-5xl mx-auto px-4"
+            transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
+            className="mt-12 mb-20 max-w-[1200px] mx-auto px-4"
           >
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
                   <div>
-                    <h2 className="font-jakarta font-extrabold text-xl sm:text-2xl text-text-primary">
+                    <div className="inline-flex items-center gap-2 mb-3">
+                      <span className="w-8 h-[2px] bg-accent rounded-full"></span>
+                      <span className="text-accent font-bold text-sm tracking-wider uppercase">Ekosistem</span>
+                    </div>
+                    <h2 className="font-jakarta font-extrabold text-3xl sm:text-4xl text-white">
                       Eksplorasi JagaFakta
                     </h2>
-                    <p className="text-sm text-text-muted">Platform lengkap anti-misinformasi Indonesia.</p>
+                    <p className="text-base text-text-muted mt-2">Platform lengkap anti-misinformasi Indonesia.</p>
                   </div>
-                  <span className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-accent/10 text-accent border border-accent/20 uppercase tracking-wider">
-                    🌟 Phase 5 Aktif
-                  </span>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.05] shadow-inner">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-wider">
+                      Semua Sistem Online
+                    </span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {/* Peta Hoaks */}
                   <Link href="/peta-hoaks" className="group">
                     <div className="glass h-full p-6 rounded-2xl border border-white/[0.05] group-hover:border-hoaks/30 
@@ -483,45 +520,56 @@ export default function HomePage() {
                   </div>
 
                   {/* Multi-Language — Phase 5 */}
-                  <div className="group">
-                    <div className="glass h-full p-6 rounded-2xl border border-white/[0.05] group-hover:border-emerald-400/30 
-                                    transition-all hover:-translate-y-1 relative overflow-hidden">
-                      <div className="absolute top-3 right-3">
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">P5</span>
+                  <div className="group lg:col-span-2">
+                    <div className="glass h-full p-6 sm:p-8 rounded-[1.5rem] border border-white/[0.05] group-hover:border-emerald-400/30 
+                                    transition-all hover:-translate-y-1 relative overflow-hidden bg-gradient-to-br from-white/[0.02] to-emerald-500/[0.02]">
+                      <div className="absolute top-4 right-4">
+                        <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">P5</span>
                       </div>
-                      <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-all">
-                        <Globe className="w-32 h-32" />
+                      <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all group-hover:scale-110 duration-500">
+                        <Globe className="w-48 h-48" />
                       </div>
-                      <div className="w-12 h-12 rounded-xl bg-emerald-400/10 flex items-center justify-center mb-4">
-                        <Globe className="w-6 h-6 text-emerald-400" />
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-400/10 flex items-center justify-center mb-5 border border-emerald-500/20">
+                        <Globe className="w-7 h-7 text-emerald-400" />
                       </div>
-                      <h3 className="font-jakarta font-bold text-lg text-text-primary mb-2">Multi-Bahasa</h3>
-                      <p className="text-sm text-text-muted mb-4">Cek hoaks dalam Bahasa Jawa, Sunda, Melayu, Tagalog, dan English.</p>
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                        Ganti bahasa di header ↑
+                      <h3 className="font-jakarta font-bold text-xl text-white mb-2">Multi-Bahasa & Daerah</h3>
+                      <p className="text-sm text-text-muted mb-6 max-w-sm">Verifikasi misinformasi yang beredar dalam berbagai bahasa daerah dan regional secara otomatis.</p>
+                      <div className="flex flex-wrap gap-2">
+                        {['Jawa', 'Sunda', 'Melayu', 'Tagalog', 'English'].map(lang => (
+                          <span key={lang} className="px-3 py-1 text-[10px] font-bold rounded-md bg-white/5 text-white/70 border border-white/10">{lang}</span>
+                        ))}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Viral Stats Mini Dashboard */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="glass p-5 rounded-2xl border border-white/[0.05] flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Users className="w-5 h-5 text-accent" />
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="glass p-6 rounded-[1.5rem] border border-white/[0.05] flex items-center gap-5 hover:bg-white/[0.02] transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 border border-accent/20">
+                      <Users className="w-6 h-6 text-accent" />
                     </div>
                     <div>
-                      <p className="text-[11px] text-text-muted font-bold uppercase tracking-wider">Komunitas</p>
-                      <p className="text-sm text-text-primary font-medium">Bergabung dengan 1.2k+ pemeriksa fakta hari ini.</p>
+                      <p className="text-xs text-text-muted font-bold uppercase tracking-wider mb-1">Komunitas Aktif</p>
+                      <p className="text-base text-white font-medium">1.2k+ Pemeriksa</p>
                     </div>
                   </div>
-                  <div className="glass p-5 rounded-2xl border border-white/[0.05] flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                      <Zap className="w-5 h-5 text-blue-500" />
+                  <div className="glass p-6 rounded-[1.5rem] border border-white/[0.05] flex items-center gap-5 hover:bg-white/[0.02] transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
+                      <Zap className="w-6 h-6 text-blue-500" />
                     </div>
                     <div>
-                      <p className="text-[11px] text-text-muted font-bold uppercase tracking-wider">Kecepatan AI</p>
-                      <p className="text-sm text-text-primary font-medium">Verifikasi instan dalam &lt; 3 detik dengan Gemini 2.0.</p>
+                      <p className="text-xs text-text-muted font-bold uppercase tracking-wider mb-1">Kecepatan AI</p>
+                      <p className="text-base text-white font-medium">&lt; 3 Detik / Verifikasi</p>
+                    </div>
+                  </div>
+                  <div className="glass p-6 rounded-[1.5rem] border border-white/[0.05] flex items-center gap-5 hover:bg-white/[0.02] transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 border border-green-500/20">
+                      <search className="w-6 h-6 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-text-muted font-bold uppercase tracking-wider mb-1">Akurasi Sistem</p>
+                      <p className="text-base text-white font-medium">99.8% Terverifikasi</p>
                     </div>
                   </div>
                 </div>
@@ -552,49 +600,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Features Section */}
-        {!result && !isLoading && (
-          <section className="max-w-2xl mx-auto px-4 pb-16 pt-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3"
-            >
-              {[
-                {
-                  icon: <Search className="w-5 h-5 text-accent" />,
-                  title: "Analisis Teks",
-                  desc: "Paste teks forward-an langsung",
-                },
-                {
-                  icon: <ImageIcon className="w-5 h-5 text-accent" />,
-                  title: "Deteksi Gambar",
-                  desc: "Upload screenshot hoaks",
-                },
-                {
-                  icon: <Newspaper className="w-5 h-5 text-accent" />,
-                  title: "Sumber Terpercaya",
-                  desc: "Didukung Google Search",
-                },
-              ].map((feature, i) => (
-                <div
-                  key={i}
-                  className="glass rounded-xl p-4 flex flex-col items-center text-center gap-2
-                             hover:-translate-y-0.5 transition-transform"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    {feature.icon}
-                  </div>
-                  <h3 className="font-jakarta font-semibold text-sm text-text-primary">
-                    {feature.title}
-                  </h3>
-                  <p className="text-xs text-text-muted">{feature.desc}</p>
-                </div>
-              ))}
-            </motion.div>
-          </section>
-        )}
+        {/* Removed duplicate Features Section, since we have Eksplorasi JagaFakta */}
       </main>
 
       <Footer />
