@@ -17,6 +17,36 @@ import { Map, Trophy, MessageCircle, ChevronRight, Zap, Users, BarChart2, Networ
 import Link from "next/link";
 import type { FactCheckResult } from "@/types";
 
+/**
+ * Sanitize WhatsApp-pasted text: strip invisible/control Unicode characters
+ * that break JSON parsing, confuse the Gemini model, or cause silent fetch
+ * failures.  Runs on EVERY text change so the textarea never holds poison chars.
+ */
+function sanitizeWAText(text: string): string {
+  return text
+    // Remove NULL bytes
+    .replace(/\u0000/g, "")
+    // Remove zero-width chars, BOM, soft-hyphen, directional marks
+    .replace(/[\u200B-\u200F\uFEFF\u00AD]/g, "")
+    // Remove bidirectional control characters (LRE, RLE, PDF, LRO, RLO, LRI, RLI, FSI, PDI)
+    .replace(/[\u202A-\u202E\u2066-\u2069]/g, "")
+    // Remove line separator & paragraph separator (break JSON in some parsers)
+    .replace(/[\u2028\u2029]/g, "\n")
+    // Remove object replacement character (appears when copying media placeholders)
+    .replace(/\uFFFC/g, "")
+    // Remove other common invisible/control characters
+    .replace(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, "")
+    // Remove variation selectors (VS1-VS16 & VS17-VS256)
+    .replace(/[\uFE00-\uFE0F]/g, "")
+    // Remove word joiner & zero-width no-break space duplicates
+    .replace(/[\u2060\u180E]/g, "")
+    // Normalize WhatsApp formatting markers (*bold* _italic_ ~strike~) to plain text
+    .replace(/[*_~]/g, "")
+    // Collapse 3+ newlines to 2
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"text" | "image" | "video">("text");
   const [inputText, setInputText] = useState("");
@@ -98,19 +128,8 @@ export default function HomePage() {
     setError(null);
 
     try {
-      // Sanitize WA-pasted text: strip invisible/control Unicode chars that
-      // can cause JSON parse errors or confuse the Gemini model.
-      const sanitizeWAText = (text: string): string => {
-        return text
-          // Remove zero-width chars, BOM, soft-hyphen, directional marks
-          .replace(/[\u200B-\u200D\uFEFF\u00AD\u200E\u200F\u202A-\u202E]/g, "")
-          // Normalize WA formatting markers (*bold* _italic_ ~strike~) to plain
-          .replace(/[*_~]/g, "")
-          // Collapse 3+ newlines to 2
-          .replace(/\n{3,}/g, "\n\n")
-          .trim();
-      };
-
+      // Text is already sanitized on input (handleTextChange), but run once
+      // more at submit for safety — this is cheap for already-clean text.
       const cleanText = activeTab === "text" ? sanitizeWAText(inputText) : inputText;
 
       const body =
@@ -277,7 +296,7 @@ export default function HomePage() {
                     setError(null);
                   }}
                   inputText={inputText}
-                  onTextChange={setInputText}
+                  onTextChange={(text) => setInputText(sanitizeWAText(text))}
                   uploadedImage={uploadedImage}
                   onImageChange={setUploadedImage}
                   videoData={videoData}

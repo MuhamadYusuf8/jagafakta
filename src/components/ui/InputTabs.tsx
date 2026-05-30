@@ -168,6 +168,37 @@ export default function InputTabs({
                     onTextChange(e.target.value);
                   }
                 }}
+                onPaste={(e) => {
+                  // Intercept paste: sanitize clipboard text BEFORE it enters
+                  // the textarea.  This is the primary defense against invisible
+                  // Unicode characters from WhatsApp that cause API failures.
+                  e.preventDefault();
+                  const pasted = e.clipboardData.getData("text/plain");
+                  if (!pasted) return;
+
+                  // Build the new value respecting cursor selection + maxChars
+                  const ta = textareaRef.current;
+                  if (!ta) return;
+                  const start = ta.selectionStart;
+                  const end = ta.selectionEnd;
+                  const before = inputText.slice(0, start);
+                  const after = inputText.slice(end);
+                  const combined = before + pasted + after;
+
+                  // Truncate to maxChars (the parent's onTextChange will also
+                  // run sanitizeWAText, so we only need to length-limit here)
+                  const limited = combined.slice(0, maxChars);
+                  onTextChange(limited);
+
+                  // Restore cursor position after React re-render
+                  requestAnimationFrame(() => {
+                    if (textareaRef.current) {
+                      const newPos = Math.min(start + pasted.length, limited.length);
+                      textareaRef.current.selectionStart = newPos;
+                      textareaRef.current.selectionEnd = newPos;
+                    }
+                  });
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="Paste teks dari WhatsApp, forward-an, berita, atau status media sosial di sini..."
                 className="w-full min-h-[140px] sm:min-h-[180px] p-4 pr-10 rounded-xl
