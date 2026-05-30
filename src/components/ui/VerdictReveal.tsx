@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Search, BookOpen, CheckSquare, Sparkles } from "lucide-react";
+import { Shield, Search, BookOpen, CheckSquare, Sparkles, AlertCircle } from "lucide-react";
 import confetti from "canvas-confetti";
 import type { FactCheckResult, VerdictType } from "@/types";
 import { audioManager } from "@/lib/audio";
@@ -78,8 +78,9 @@ function ScanOverlay() {
 }
 
 // ── Stage progress bar ───────────────────────────────────────────────────────
+// Progress = ((stage + 1) / total) * 100 — so stage 0 shows 20%, not 0%
 function StageProgress({ stage, total }: { stage: number; total: number }) {
-  const pct = Math.min(100, Math.round((stage / total) * 100));
+  const pct = Math.min(100, Math.round(((stage + 1) / total) * 100));
   return (
     <div className="w-full">
       <div className="flex justify-between text-[10px] text-text-muted mb-1.5">
@@ -119,36 +120,50 @@ function PulseRing({ color }: { color: string }) {
 }
 
 // ── Main component ───────────────────────────────────────────────────────────
-type Phase = "scanning" | "suspense" | "revealed";
+type Phase = "scanning" | "suspense" | "revealed" | "error";
 
 interface VerdictRevealProps {
   isLoading: boolean;
   result: FactCheckResult | null;
+  error?: string | null;         // Show error inside the scanning card
   children: React.ReactNode; // The VerdictCard + reset button
 }
 
-export default function VerdictReveal({ isLoading, result, children }: VerdictRevealProps) {
-  const [phase, setPhase]         = useState<Phase>("scanning");
-  const [stageIdx, setStageIdx]   = useState(0);
+export default function VerdictReveal({ isLoading, result, error, children }: VerdictRevealProps) {
+  const [phase, setPhase]           = useState<Phase>("scanning");
+  const [stageIdx, setStageIdx]     = useState(0);
   const [stageLabel, setStageLabel] = useState(STAGES[0].label);
-  const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stageRef   = useRef(0);
-  const resultRef  = useRef<FactCheckResult | null>(null);
+  const timerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stageRef    = useRef(0);
+  const resultRef   = useRef<FactCheckResult | null>(null);
+  const suspensedRef = useRef(false); // guard against double-enterSuspense
 
   const clear = () => { if (timerRef.current) clearTimeout(timerRef.current); };
 
-  // Advance stages while scanning
+  // Advance stages while scanning.
+  // When we reach the last stage we keep pulsing (keepAlive) so the bar
+  // never freezes at 100% while waiting for a slow API response.
   const advanceStage = useCallback(() => {
     const next = stageRef.current + 1;
+
     if (next < TOTAL_STAGES) {
       stageRef.current = next;
       setStageIdx(next);
       setStageLabel(STAGES[next].label);
       audioManager.playTick();
-      timerRef.current = setTimeout(advanceStage, STAGES[next].duration);
+
+      // Schedule next stage OR keepAlive ping at last stage
+      const delay = STAGES[next].duration;
+      timerRef.current = setTimeout(advanceStage, delay);
+    } else {
+      // Last stage reached — keepAlive: re-schedule ourselves every 400 ms
+      // so React doesn't think we're frozen.  Stop only when result arrives.
+      timerRef.current = setTimeout(advanceStage, 400);
     }
-    // If we have result AND reached last stage → suspense
-    if (resultRef.current && next >= TOTAL_STAGES - 1) {
+
+    // If result is ready AND we are at (or past) the last stage → go to suspense
+    if (resultRef.current && next >= TOTAL_STAGES - 1 && !suspensedRef.current) {
+      suspensedRef.current = true;
       clear();
       enterSuspense();
     }
@@ -172,7 +187,8 @@ export default function VerdictReveal({ isLoading, result, children }: VerdictRe
   // Start scanning cycle when loading begins
   useEffect(() => {
     if (isLoading) {
-      stageRef.current = 0;
+      stageRef.current    = 0;
+      suspensedRef.current = false;
       setStageIdx(0);
       setStageLabel(STAGES[0].label);
       setPhase("scanning");
@@ -189,27 +205,38 @@ export default function VerdictReveal({ isLoading, result, children }: VerdictRe
   useEffect(() => {
     if (result) {
       resultRef.current = result;
-      if (stageRef.current >= TOTAL_STAGES - 1) {
+      if (stageRef.current >= TOTAL_STAGES - 1 && !suspensedRef.current) {
+        suspensedRef.current = true;
         clear();
         enterSuspense();
       }
-      // Otherwise advanceStage will detect it and trigger suspense
+      // Otherwise advanceStage keepAlive loop will detect it and trigger suspense
     }
   }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset when both loading=false and result=null (user clicked "Cek Lain")
+  // When error arrives while loading screen is visible → show error phase
   useEffect(() => {
-    if (!isLoading && !result) {
+    if (error && !result && !isLoading) {
+      clear();
+      audioManager.stopScan();
+      setPhase("error");
+    }
+  }, [error, result, isLoading]);
+
+  // Reset when both loading=false and result=null AND no error (user clicked "Cek Lain")
+  useEffect(() => {
+    if (!isLoading && !result && !error) {
       clear();
       setPhase("scanning");
-      stageRef.current = 0;
-      resultRef.current = null;
+      stageRef.current     = 0;
+      suspensedRef.current = false;
+      resultRef.current    = null;
     }
-  }, [isLoading, result]);
+  }, [isLoading, result, error]);
 
   const style = result ? VERDICT_STYLE[result.verdict] : null;
 
-  if (!isLoading && !result) return null;
+  if (!isLoading && !result && !error) return null;
 
   return (
     <div className="mt-8 max-w-2xl mx-auto px-4">
@@ -321,6 +348,24 @@ export default function VerdictReveal({ isLoading, result, children }: VerdictRe
               transition={{ delay: 0.35, duration: 0.5 }}>
               {children}
             </motion.div>
+          </motion.div>
+        )}
+
+        {/* ── ERROR phase ── */}
+        {phase === "error" && error && (
+          <motion.div key="error"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="relative glass-strong rounded-2xl p-6 sm:p-8 space-y-4 overflow-hidden border border-red-500/20"
+          >
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-red-400 mb-1">Verifikasi Gagal</p>
+                <p className="text-xs text-text-muted leading-relaxed max-w-xs">{error}</p>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

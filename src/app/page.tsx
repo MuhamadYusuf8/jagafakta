@@ -98,9 +98,24 @@ export default function HomePage() {
     setError(null);
 
     try {
+      // Sanitize WA-pasted text: strip invisible/control Unicode chars that
+      // can cause JSON parse errors or confuse the Gemini model.
+      const sanitizeWAText = (text: string): string => {
+        return text
+          // Remove zero-width chars, BOM, soft-hyphen, directional marks
+          .replace(/[\u200B-\u200D\uFEFF\u00AD\u200E\u200F\u202A-\u202E]/g, "")
+          // Normalize WA formatting markers (*bold* _italic_ ~strike~) to plain
+          .replace(/[*_~]/g, "")
+          // Collapse 3+ newlines to 2
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+      };
+
+      const cleanText = activeTab === "text" ? sanitizeWAText(inputText) : inputText;
+
       const body =
         activeTab === "text"
-          ? { inputType: "text", content: inputText.trim() }
+          ? { inputType: "text", content: cleanText }
           : activeTab === "image"
           ? {
               inputType: "image",
@@ -294,7 +309,7 @@ export default function HomePage() {
 
         {/* ── VerdictReveal: handles loading scanner + dramatic reveal ── */}
         <div ref={resultRef} className="scroll-mt-20">
-          <VerdictReveal isLoading={isLoading} result={result}>
+          <VerdictReveal isLoading={isLoading} result={result} error={error}>
             <div className="space-y-6">
               {result && <VerdictCard result={result} />}
               <div className="flex justify-center">
