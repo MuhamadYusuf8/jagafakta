@@ -43,8 +43,7 @@ function sanitizeWAText(text: string): string {
     // Normalize WhatsApp formatting markers (*bold* _italic_ ~strike~) to plain text
     .replace(/[*_~]/g, "")
     // Collapse 3+ newlines to 2
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+    .replace(/\n{3,}/g, "\n\n");
 }
 
 export default function HomePage() {
@@ -130,7 +129,7 @@ export default function HomePage() {
     try {
       // Text is already sanitized on input (handleTextChange), but run once
       // more at submit for safety — this is cheap for already-clean text.
-      const cleanText = activeTab === "text" ? sanitizeWAText(inputText) : inputText;
+      const cleanText = activeTab === "text" ? sanitizeWAText(inputText).trim() : inputText;
 
       const body =
         activeTab === "text"
