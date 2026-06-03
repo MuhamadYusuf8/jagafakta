@@ -185,8 +185,8 @@ export default function InputTabs({
                   const after = inputText.slice(end);
                   const combined = before + pasted + after;
 
-                  // Truncate to maxChars (the parent's onTextChange will also
-                  // run sanitizeWAText, so we only need to length-limit here)
+                  // Truncate to maxChars (sanitizeWAText runs at submit time,
+                  // so we only need to length-limit here)
                   const limited = combined.slice(0, maxChars);
                   onTextChange(limited);
 

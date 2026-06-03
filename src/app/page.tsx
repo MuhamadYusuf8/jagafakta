@@ -127,8 +127,8 @@ export default function HomePage() {
     setError(null);
 
     try {
-      // Text is already sanitized on input (handleTextChange), but run once
-      // more at submit for safety — this is cheap for already-clean text.
+      // Sanitize at submit time (not per-keystroke, to avoid breaking mobile
+      // keyboard predictive/composition input that relies on spaces).
       const cleanText = activeTab === "text" ? sanitizeWAText(inputText).trim() : inputText;
 
       const body =
@@ -295,7 +295,7 @@ export default function HomePage() {
                     setError(null);
                   }}
                   inputText={inputText}
-                  onTextChange={(text) => setInputText(sanitizeWAText(text))}
+                  onTextChange={(text) => setInputText(text)}
                   uploadedImage={uploadedImage}
                   onImageChange={setUploadedImage}
                   videoData={videoData}
